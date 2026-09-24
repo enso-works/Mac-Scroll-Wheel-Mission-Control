@@ -22,13 +22,29 @@ final class SettingsWindow {
 }
 
 struct SettingsView: View {
+    /// Grow to fit all content instead of scrolling. Used when rendering README screenshots.
+    var fitsContent = false
+
     @ObservedObject private var settings = AppSettings.shared
     @ObservedObject private var engine = GestureEngine.shared
     @State private var launchAtLogin = LoginItem.isEnabled
 
-    private let repoURL = URL(string: "https://github.com/enso-works/mac-scroll-wheel-mission-control")!
+    private let repoURL = URL(string: "https://github.com/enso-works/Mac-Scroll-Wheel-Mission-Control")!
+    private let websiteURL = URL(string: "https://scrollwheelmissioncontrol.bavrk.com")!
+
+    /// Tall enough for most sections, short enough for a 13-inch screen; the form scrolls beyond it.
+    private var windowHeight: CGFloat {
+        min(760, (NSScreen.main?.visibleFrame.height ?? 800) - 60)
+    }
 
     var body: some View {
+        form
+            .frame(width: 500, height: fitsContent ? nil : windowHeight)
+            .fixedSize(horizontal: false, vertical: fitsContent)
+            .onAppear { launchAtLogin = LoginItem.isEnabled }
+    }
+
+    private var form: some View {
         Form {
             Section {
                 HeaderRow()
@@ -47,9 +63,18 @@ struct SettingsView: View {
             }
 
             Section {
-                Picker("Drag direction", selection: $settings.naturalDirection) {
-                    Text("Natural").tag(true)
-                    Text("Standard").tag(false)
+                Picker("Drag left / right", selection: $settings.naturalDirection) {
+                    Text("Switch desktop (natural)").tag(true)
+                    Text("Switch desktop (standard)").tag(false)
+                }
+                Picker("Drag up", selection: $settings.dragUpAction) {
+                    ForEach(VerticalAction.allCases) { Text($0.title).tag($0) }
+                }
+                Picker("Drag down", selection: $settings.dragDownAction) {
+                    ForEach(VerticalAction.allCases) { Text($0.title).tag($0) }
+                }
+                Picker("Wheel click", selection: $settings.clickAction) {
+                    ForEach(ClickAction.allCases) { Text($0.title).tag($0) }
                 }
                 LabeledContent("Drag distance") {
                     HStack {
@@ -60,27 +85,22 @@ struct SettingsView: View {
                             .frame(width: 48, alignment: .trailing)
                     }
                 }
-                Picker("Wheel click", selection: $settings.clickAction) {
-                    ForEach(ClickAction.allCases) { action in
-                        Text(action.title).tag(action)
-                    }
-                }
             } header: {
-                Text("Gesture")
+                Text("Gestures")
             } footer: {
                 Text(settings.naturalDirection
-                     ? "Hold the wheel and drag right to go to the desktop on the left, like pushing the screen aside. One desktop per drag."
-                     : "Hold the wheel and drag right to go to the desktop on the right. One desktop per drag.")
+                     ? "Hold the wheel and drag. Natural: drag right to go to the desktop on the left, like pushing the screen aside. One action per drag."
+                     : "Hold the wheel and drag. Standard: drag right to go to the desktop on the right. One action per drag.")
                     .font(.callout)
                     .foregroundStyle(.secondary)
             }
 
             Section {
-                ExcludedAppsList(settings: settings)
+                AppRulesList(settings: settings)
             } header: {
-                Text("Excluded apps")
+                Text("App rules")
             } footer: {
-                Text("The scroll wheel works normally while one of these apps is in front, e.g. for orbiting in Blender.")
+                Text("Off: the app gets the middle button untouched, e.g. for orbiting in Blender. Gestures only: dragging still works, but a wheel click is always a normal middle click, whatever Wheel click is set to.")
                     .font(.callout)
                     .foregroundStyle(.secondary)
             }
@@ -90,14 +110,12 @@ struct SettingsView: View {
                     Text("Version \(Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "dev")")
                         .foregroundStyle(.secondary)
                     Spacer()
-                    Link("View on GitHub", destination: repoURL)
+                    Link("Website", destination: websiteURL)
+                    Link("GitHub", destination: repoURL)
                 }
             }
         }
         .formStyle(.grouped)
-        .frame(width: 500)
-        .fixedSize(horizontal: false, vertical: true)
-        .onAppear { launchAtLogin = LoginItem.isEnabled }
     }
 }
 
@@ -183,23 +201,29 @@ private struct AccessibilityToggleHint: View {
     }
 }
 
-private struct ExcludedAppsList: View {
+private struct AppRulesList: View {
     @ObservedObject var settings: AppSettings
 
     var body: some View {
-        if settings.excludedBundleIDs.isEmpty {
-            Text("No excluded apps")
+        if settings.appRules.isEmpty {
+            Text("No app rules. Gestures work the same in every app.")
                 .foregroundStyle(.secondary)
         }
-        ForEach(settings.excludedBundleIDs, id: \.self) { bundleID in
+        ForEach($settings.appRules) { $rule in
             HStack(spacing: 10) {
-                Image(nsImage: AppInfo.icon(for: bundleID))
+                Image(nsImage: AppInfo.icon(for: rule.bundleID))
                     .resizable()
                     .frame(width: 22, height: 22)
-                Text(AppInfo.name(for: bundleID))
+                Text(AppInfo.name(for: rule.bundleID))
+                    .lineLimit(1)
                 Spacer()
+                Picker("Mode for \(AppInfo.name(for: rule.bundleID))", selection: $rule.mode) {
+                    ForEach(AppMode.allCases) { Text($0.title).tag($0) }
+                }
+                .labelsHidden()
+                .fixedSize()
                 Button {
-                    settings.excludedBundleIDs.removeAll { $0 == bundleID }
+                    settings.appRules.removeAll { $0.bundleID == rule.bundleID }
                 } label: {
                     Image(systemName: "minus.circle.fill")
                 }
@@ -221,24 +245,24 @@ private struct ExcludedAppsList: View {
         }
     }
 
-    /// Running apps with a Dock icon that aren't already excluded.
+    /// Running apps with a Dock icon that don't have a rule yet.
     private var runningApps: [NSRunningApplication] {
         NSWorkspace.shared.runningApplications
             .filter { $0.activationPolicy == .regular && $0.bundleIdentifier != Bundle.main.bundleIdentifier }
-            .filter { !settings.isExcluded($0.bundleIdentifier) }
+            .filter { !settings.hasRule(for: $0.bundleIdentifier) }
             .sorted { ($0.localizedName ?? "") < ($1.localizedName ?? "") }
     }
 
     private func add(_ bundleID: String?) {
-        guard let bundleID, !settings.isExcluded(bundleID) else { return }
-        settings.excludedBundleIDs.append(bundleID)
+        guard let bundleID, !settings.hasRule(for: bundleID) else { return }
+        settings.appRules.append(AppRule(bundleID: bundleID, mode: .off))
     }
 
     private func chooseApp() {
         let panel = NSOpenPanel()
         panel.allowedContentTypes = [.application]
         panel.directoryURL = URL(fileURLWithPath: "/Applications")
-        panel.prompt = "Exclude"
+        panel.prompt = "Add"
         guard panel.runModal() == .OK, let url = panel.url else { return }
         add(Bundle(url: url)?.bundleIdentifier)
     }

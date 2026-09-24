@@ -6,6 +6,7 @@ enum SystemActions {
         static let left: CGKeyCode = 123
         static let right: CGKeyCode = 124
         static let down: CGKeyCode = 125
+        static let f11: CGKeyCode = 103
     }
 
     /// Posts Ctrl+Left / Ctrl+Right ("Move left/right a space").
@@ -22,6 +23,11 @@ enum SystemActions {
         postShortcut(KeyCode.down)
     }
 
+    /// Posts F11 ("Show Desktop").
+    static func showDesktop() {
+        postShortcut(KeyCode.f11, flags: .maskSecondaryFn)
+    }
+
     /// Re-creates a plain middle click at `location`, tagged so the event tap lets it through.
     static func postMiddleClick(at location: CGPoint) {
         let src = CGEventSource(stateID: .hidSystemState)
@@ -33,9 +39,8 @@ enum SystemActions {
         }
     }
 
-    private static func postShortcut(_ key: CGKeyCode) {
-        // Arrow-key hotkeys are registered with Ctrl + Fn, so the Fn flag is required to match.
-        let flags: CGEventFlags = [.maskControl, .maskSecondaryFn]
+    /// Arrow-key hotkeys are registered with Ctrl + Fn, and function keys with Fn, so Fn is required to match.
+    private static func postShortcut(_ key: CGKeyCode, flags: CGEventFlags = [.maskControl, .maskSecondaryFn]) {
         let src = CGEventSource(stateID: .hidSystemState)
         for isDown in [true, false] {
             guard let event = CGEvent(keyboardEventSource: src, virtualKey: key, keyDown: isDown) else { continue }

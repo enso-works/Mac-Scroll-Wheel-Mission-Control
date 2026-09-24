@@ -11,7 +11,7 @@ app.activate(ignoringOtherApps: true)
 
 func renderSettings(trusted: Bool, appearance: NSAppearance.Name, to path: String) {
     GestureEngine.shared.isTrusted = trusted
-    let window = NSWindow(contentViewController: NSHostingController(rootView: SettingsView()))
+    let window = NSWindow(contentViewController: NSHostingController(rootView: SettingsView(fitsContent: true)))
     window.title = "Scroll Wheel Mission Control"
     window.styleMask = [.titled, .closable]
     window.appearance = NSAppearance(named: appearance)

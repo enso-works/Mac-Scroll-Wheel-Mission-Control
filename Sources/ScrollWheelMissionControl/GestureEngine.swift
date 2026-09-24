@@ -21,8 +21,10 @@ final class GestureEngine: ObservableObject {
     private var pollTimer: Timer?
 
     private var gestureStart: CGPoint = .zero
-    private var didSwitch = false
+    private var didAct = false
     private var passThrough = false
+    /// The frontmost app keeps its plain middle click (per-app "Gestures only" mode).
+    private var clickPassesThrough = false
 
     private init() {}
 
@@ -72,21 +74,22 @@ final class GestureEngine: ObservableObject {
 
         // Decide once per press so a focus change mid-gesture can't split the event stream.
         if type == .otherMouseDown {
-            let frontmost = NSWorkspace.shared.frontmostApplication?.bundleIdentifier
-            passThrough = !settings.isEnabled || settings.isExcluded(frontmost)
+            let mode = settings.mode(for: NSWorkspace.shared.frontmostApplication?.bundleIdentifier)
+            passThrough = !settings.isEnabled || mode == .off
+            clickPassesThrough = mode == .gesturesOnly
         }
         if passThrough { return pass }
 
         switch type {
         case .otherMouseDown:
             gestureStart = event.location
-            didSwitch = false
+            didAct = false
         case .otherMouseDragged:
-            // One switch per press; release and drag again to move further.
-            if !didSwitch { didSwitch = switchIfDragged(to: event.location) }
+            // One action per press; release and drag again to repeat.
+            if !didAct { didAct = performDragIfPastThreshold(to: event.location) }
         case .otherMouseUp:
-            if !didSwitch && !switchIfDragged(to: event.location) {
-                performClickAction(at: event.location)
+            if !didAct && !performDragIfPastThreshold(to: event.location) {
+                performClick(at: event.location)
             }
         default:
             return pass
@@ -95,20 +98,43 @@ final class GestureEngine: ObservableObject {
         return nil
     }
 
-    /// Switches desktop when the pointer has moved far enough horizontally. Returns whether it did.
-    private func switchIfDragged(to location: CGPoint) -> Bool {
+    /// Runs the drag action once the pointer has moved far enough. The dominant axis wins, so a
+    /// slightly diagonal drag still counts as horizontal or vertical. Returns whether the drag counted.
+    private func performDragIfPastThreshold(to location: CGPoint) -> Bool {
         let dx = location.x - gestureStart.x
-        guard abs(dx) >= settings.dragDistance else { return false }
-        let draggedRight = dx > 0
-        SystemActions.switchSpace(right: settings.naturalDirection ? !draggedRight : draggedRight)
+        let dy = location.y - gestureStart.y
+        guard max(abs(dx), abs(dy)) >= settings.dragDistance else { return false }
+
+        if abs(dx) >= abs(dy) {
+            let draggedRight = dx > 0
+            SystemActions.switchSpace(right: settings.naturalDirection ? !draggedRight : draggedRight)
+        } else {
+            // Screen coordinates grow downward, so a negative dy is an upward drag.
+            perform(dy < 0 ? settings.dragUpAction : settings.dragDownAction)
+        }
+        // A vertical drag set to "Nothing" still counts, so releasing doesn't fire a click.
         return true
     }
 
-    private func performClickAction(at location: CGPoint) {
+    private func perform(_ action: VerticalAction) {
+        switch action {
+        case .none: break
+        case .missionControl: SystemActions.openMissionControl()
+        case .appWindows: SystemActions.showAppWindows()
+        case .showDesktop: SystemActions.showDesktop()
+        }
+    }
+
+    private func performClick(at location: CGPoint) {
+        if clickPassesThrough {
+            SystemActions.postMiddleClick(at: location)
+            return
+        }
         switch settings.clickAction {
         case .missionControl: SystemActions.openMissionControl()
         case .appWindows: SystemActions.showAppWindows()
         case .middleClick: SystemActions.postMiddleClick(at: location)
+        case .none: break
         }
     }
 }
