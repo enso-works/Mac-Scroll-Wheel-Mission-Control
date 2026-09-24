@@ -49,8 +49,8 @@ Trackpads have swipe gestures for this. Regular mice don't, and the apps that ad
 
 ### Download
 
-1. Download the latest `ScrollWheelMissionControl-x.y.z.zip` from the [Releases page](https://github.com/enso-works/mac-scroll-wheel-mission-control/releases/latest).
-2. Unzip it and drag **Scroll Wheel Mission Control.app** into your **Applications** folder.
+1. **[Download ScrollWheelMissionControl.dmg](https://github.com/enso-works/mac-scroll-wheel-mission-control/releases/latest/download/ScrollWheelMissionControl.dmg)** (always the latest version). A `.zip` is also on the [Releases page](https://github.com/enso-works/mac-scroll-wheel-mission-control/releases/latest).
+2. Open the DMG and drag **Scroll Wheel Mission Control** onto the **Applications** folder.
 3. The first time you open it, **right-click the app and choose Open**, then click **Open** in the dialog.
 
 > **Why the extra step?** Apple charges developers $99 a year to notarize apps. This is a free hobby project, so it isn't notarized, and macOS says it is "from an unidentified developer". Right-click > Open tells macOS you trust it. You only do this once. If you'd rather not trust a download, [build it yourself](#build-from-source): it takes about a minute.
@@ -76,7 +76,10 @@ The app needs **Accessibility** permission so it can see scroll wheel clicks and
 5. Optional: turn on **Launch at login**.
 
 <p align="center">
-  <img src="docs/images/settings.png" alt="Settings window" width="520">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/images/permission-dark.png">
+    <img src="docs/images/permission-light.png" alt="Settings window asking for Accessibility access, showing the switch to turn on" width="460">
+  </picture>
 </p>
 
 ## How to use it
@@ -94,6 +97,13 @@ Each drag moves one desktop. To move further, release the wheel and drag again.
 ## Settings
 
 Open **Settings...** from the menu bar icon, or open the app again from Spotlight or Launchpad.
+
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/images/settings-dark.png">
+    <img src="docs/images/settings-light.png" alt="Settings window with gesture, click action and excluded apps options" width="460">
+  </picture>
+</p>
 
 | Setting | What it does | Default |
 | --- | --- | --- |
@@ -174,8 +184,9 @@ Requirements: macOS 13 or later and the Xcode Command Line Tools (`xcode-select 
 ```sh
 make app       # universal .app in build/
 make install   # build and copy to /Applications
-make zip       # release zip in dist/
-make art       # re-render the icon and README images
+make dmg       # release DMG and zip in dist/
+make art       # re-render the icon and README artwork
+make screenshots  # re-render the settings window screenshots
 make clean
 ```
 
@@ -198,7 +209,7 @@ Sources/ScrollWheelMissionControl/
   SettingsView.swift     SwiftUI settings window
   SystemSettingsLinks.swift  Accessibility prompt and launch-at-login helpers
 Resources/               Info.plist and the 1024px icon
-scripts/                 App bundling and artwork generation
+scripts/                 App bundling, DMG packaging, artwork and screenshots
 ```
 
 ## How it works
