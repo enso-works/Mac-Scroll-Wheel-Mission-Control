@@ -245,6 +245,18 @@ func drawGestures(_ rect: CGRect) {
     }
 }
 
+/// 1200x630 social preview card for the website.
+func drawSocialCard(_ rect: CGRect) {
+    drawBackdrop(rect, radius: 0)
+    drawIcon(in: CGRect(x: rect.midX - 150, y: rect.maxY - 330, width: 300, height: 300))
+    let title = NSAttributedString(string: "Scroll Wheel Mission Control", attributes: [
+        .font: NSFont.systemFont(ofSize: 62, weight: .heavy), .foregroundColor: NSColor.white])
+    title.draw(at: CGPoint(x: rect.midX - title.size().width / 2, y: 170))
+    let tagline = NSAttributedString(string: "Switch macOS desktops with any basic mouse. Free forever.", attributes: [
+        .font: NSFont.systemFont(ofSize: 30, weight: .regular), .foregroundColor: NSColor.white.withAlphaComponent(0.72)])
+    tagline.draw(at: CGPoint(x: rect.midX - tagline.size().width / 2, y: 110))
+}
+
 // MARK: - Main
 
 let fm = FileManager.default
@@ -255,3 +267,4 @@ render(CGSize(width: 1024, height: 1024), to: "Resources/AppIcon-1024.png") { dr
 render(CGSize(width: 512, height: 512), to: "docs/images/icon.png") { drawIcon(in: $0) }
 render(CGSize(width: 1600, height: 640), to: "docs/images/banner.png") { drawBanner($0) }
 render(CGSize(width: 1600, height: 400), to: "docs/images/gestures.png") { drawGestures($0) }
+render(CGSize(width: 1200, height: 630), to: "docs/images/social-card.png") { drawSocialCard($0) }
