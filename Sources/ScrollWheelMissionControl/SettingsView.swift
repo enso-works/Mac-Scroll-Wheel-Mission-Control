@@ -27,6 +27,7 @@ struct SettingsView: View {
 
     @ObservedObject private var settings = AppSettings.shared
     @ObservedObject private var engine = GestureEngine.shared
+    @ObservedObject private var updates = UpdateChecker.shared
     @State private var launchAtLogin = LoginItem.isEnabled
 
     private let repoURL = URL(string: "https://github.com/enso-works/Mac-Scroll-Wheel-Mission-Control")!
@@ -49,6 +50,12 @@ struct SettingsView: View {
             Section {
                 HeaderRow()
                 PermissionRow(isTrusted: engine.isTrusted)
+            }
+
+            if let update = updates.availableUpdate {
+                Section {
+                    UpdateBanner(version: update.version, url: update.url)
+                }
             }
 
             Section("General") {
@@ -106,8 +113,27 @@ struct SettingsView: View {
             }
 
             Section {
+                Toggle("Check for updates automatically", isOn: $settings.checkForUpdates)
+                    .onChange(of: settings.checkForUpdates) { enabled in
+                        if enabled { updates.check() }
+                    }
                 HStack {
-                    Text("Version \(Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "dev")")
+                    UpdateStatus(state: updates.state)
+                    Spacer()
+                    Button("Check Now") { updates.check() }
+                        .disabled(updates.state == .checking)
+                }
+            } header: {
+                Text("Updates")
+            } footer: {
+                Text("When on, the app asks GitHub for the latest version once a day. Nothing about you or your Mac is sent. It never downloads or installs anything by itself.")
+                    .font(.callout)
+                    .foregroundStyle(.secondary)
+            }
+
+            Section {
+                HStack {
+                    Text("Version \(UpdateChecker.currentVersion)")
                         .foregroundStyle(.secondary)
                     Spacer()
                     Link("Website", destination: websiteURL)
@@ -116,6 +142,54 @@ struct SettingsView: View {
             }
         }
         .formStyle(.grouped)
+    }
+}
+
+private struct UpdateBanner: View {
+    let version: String
+    let url: URL
+
+    var body: some View {
+        HStack(spacing: 10) {
+            Image(systemName: "arrow.down.circle.fill")
+                .font(.title2)
+                .foregroundStyle(Color.accentColor)
+            VStack(alignment: .leading, spacing: 2) {
+                Text("Version \(version) is available")
+                    .font(.headline)
+                Text("You have \(UpdateChecker.currentVersion).")
+                    .font(.callout)
+                    .foregroundStyle(.secondary)
+            }
+            Spacer()
+            Button("Download") { NSWorkspace.shared.open(url) }
+                .keyboardShortcut(.defaultAction)
+        }
+    }
+}
+
+private struct UpdateStatus: View {
+    let state: UpdateChecker.State
+
+    var body: some View {
+        switch state {
+        case .idle:
+            Text("Not checked yet").foregroundStyle(.secondary)
+        case .checking:
+            HStack(spacing: 6) {
+                ProgressView().controlSize(.small)
+                Text("Checking...").foregroundStyle(.secondary)
+            }
+        case .upToDate:
+            Label("You're up to date", systemImage: "checkmark.circle.fill")
+                .foregroundStyle(.secondary)
+        case .available(let version, _):
+            Label("Version \(version) available", systemImage: "arrow.down.circle.fill")
+                .foregroundStyle(Color.accentColor)
+        case .failed:
+            Label("Couldn't reach GitHub", systemImage: "exclamationmark.triangle.fill")
+                .foregroundStyle(.secondary)
+        }
     }
 }
 

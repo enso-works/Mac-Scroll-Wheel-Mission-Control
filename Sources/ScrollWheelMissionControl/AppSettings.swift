@@ -76,6 +76,8 @@ final class AppSettings: ObservableObject {
         static let dragUpAction = "dragUpAction"
         static let dragDownAction = "dragDownAction"
         static let appRules = "appRules"
+        static let checkForUpdates = "checkForUpdates"
+        static let lastUpdateCheck = "lastUpdateCheck"
         /// Pre-1.1 list of apps that were fully excluded; migrated into `appRules`.
         static let legacyExcludedBundleIDs = "excludedBundleIDs"
     }
@@ -112,6 +114,16 @@ final class AppSettings: ObservableObject {
         didSet { defaults.set(try? JSONEncoder().encode(appRules), forKey: Key.appRules) }
     }
 
+    /// Opt-in: asks GitHub for the latest release at most once a day.
+    @Published var checkForUpdates: Bool {
+        didSet { defaults.set(checkForUpdates, forKey: Key.checkForUpdates) }
+    }
+
+    var lastUpdateCheck: Date? {
+        get { defaults.object(forKey: Key.lastUpdateCheck) as? Date }
+        set { defaults.set(newValue, forKey: Key.lastUpdateCheck) }
+    }
+
     private init() {
         defaults.register(defaults: [
             Key.isEnabled: true,
@@ -121,6 +133,7 @@ final class AppSettings: ObservableObject {
             Key.clickAction: ClickAction.middleClick.rawValue,
             Key.dragUpAction: VerticalAction.missionControl.rawValue,
             Key.dragDownAction: VerticalAction.appWindows.rawValue,
+            Key.checkForUpdates: false,
         ])
         isEnabled = defaults.bool(forKey: Key.isEnabled)
         naturalDirection = defaults.bool(forKey: Key.naturalDirection)
@@ -128,6 +141,7 @@ final class AppSettings: ObservableObject {
         clickAction = ClickAction(rawValue: defaults.string(forKey: Key.clickAction) ?? "") ?? .middleClick
         dragUpAction = VerticalAction(rawValue: defaults.string(forKey: Key.dragUpAction) ?? "") ?? .missionControl
         dragDownAction = VerticalAction(rawValue: defaults.string(forKey: Key.dragDownAction) ?? "") ?? .appWindows
+        checkForUpdates = defaults.bool(forKey: Key.checkForUpdates)
         appRules = Self.loadAppRules(from: defaults)
     }
 
