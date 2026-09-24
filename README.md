@@ -9,6 +9,13 @@
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-22c55e" alt="MIT License"></a>
 </p>
 
+<p align="center">
+  <a href="https://scrollwheelmissioncontrol.bavrk.com"><b>Website</b></a> ·
+  <a href="https://scrollwheelmissioncontrol.bavrk.com/docs">Docs</a> ·
+  <a href="https://scrollwheelmissioncontrol.bavrk.com/how-to-switch-desktops-on-mac">How to switch desktops on Mac</a> ·
+  <a href="https://github.com/enso-works/Mac-Scroll-Wheel-Mission-Control/releases/latest">Download</a>
+</p>
+
 # Scroll Wheel Mission Control
 
 **Use any cheap mouse to switch desktops on your Mac.** Hold the scroll wheel and drag left or right to move one desktop. Click the wheel to open Mission Control.
