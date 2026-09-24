@@ -202,8 +202,8 @@ func drawBanner(_ rect: CGRect) {
     y -= 44
     var x = left
     x += drawPill("Drag to switch", symbol: "arrow.left.and.right", at: CGPoint(x: x, y: y - 56)) + 16
-    x += drawPill("Click for Mission Control", symbol: "square.grid.3x2", at: CGPoint(x: x, y: y - 56)) + 16
-    _ = drawPill("Per-app off", symbol: "nosign", at: CGPoint(x: x, y: y - 56))
+    x += drawPill("Drag up for Mission Control", symbol: "square.grid.3x2", at: CGPoint(x: x, y: y - 56)) + 16
+    _ = drawPill("Per-app rules", symbol: "slider.horizontal.3", at: CGPoint(x: x, y: y - 56))
 }
 
 func drawGestureCard(_ rect: CGRect, symbol: String, title: String, body: String) {
@@ -231,9 +231,9 @@ func drawGestures(_ rect: CGRect) {
     let cards: [(String, String, String)] = [
         ("arrow.left.and.right", "Hold wheel + drag",
          "Move exactly one desktop left or right. Release and drag again to keep going."),
-        ("computermouse.fill", "Click the wheel",
-         "Open Mission Control, show the app's windows, or keep a normal middle click."),
-        ("nosign", "Exclude apps",
+        ("arrow.up.and.down", "Drag up or down",
+         "Mission Control and App Exposé, like a trackpad swipe. A click stays a normal middle click."),
+        ("slider.horizontal.3", "Per-app rules",
          "Blender and other 3D apps keep the middle button for orbiting and panning."),
     ]
     let pad: CGFloat = 48, gap: CGFloat = 28
