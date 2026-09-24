@@ -1,7 +1,7 @@
 APP := build/Scroll Wheel Mission Control.app
 VERSION ?= $(shell cat VERSION)
 
-.PHONY: app install zip art clean
+.PHONY: app install dmg art screenshots clean
 
 ## Build the universal app bundle into build/
 app:
@@ -13,15 +13,17 @@ install: app
 	cp -R "$(APP)" /Applications/
 	@echo "Installed to /Applications. Open it from Spotlight or Launchpad."
 
-## Build and package a release zip into dist/
-zip: app
-	mkdir -p dist
-	ditto -c -k --keepParent "$(APP)" "dist/ScrollWheelMissionControl-$(VERSION).zip"
-	@echo "dist/ScrollWheelMissionControl-$(VERSION).zip"
+## Build and package the release DMG and zip into dist/
+dmg: app
+	VERSION=$(VERSION) ./scripts/package-dmg.sh
 
-## Re-render the icon and README images
+## Re-render the icon and README artwork
 art:
 	swift scripts/generate-art.swift
+
+## Re-render the settings window screenshots
+screenshots:
+	./scripts/render-screenshots.sh
 
 clean:
 	rm -rf .build build dist
