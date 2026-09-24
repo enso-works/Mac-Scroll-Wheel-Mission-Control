@@ -15,6 +15,10 @@
 
 Trackpads have swipe gestures for this. Regular mice don't, and the apps that add it usually want a subscription or a paid license after a trial. This app is free, small, and open source. It has no analytics and makes no network requests.
 
+> [!TIP]
+> **Free forever. $0, no trial, no license key, no "pro" version, no ads, no tracking.**
+> If you found this while looking for a free alternative to Mac Mouse Fix, SteerMouse, BetterTouchTool or a vendor mouse app just to switch desktops, you're in the right place. See [the promise](#free-forever).
+
 <p align="center">
   <img src="docs/images/gestures.png" alt="Hold wheel and drag to switch desktops, click the wheel for Mission Control, exclude apps like Blender" width="100%">
 </p>
@@ -31,6 +35,8 @@ Trackpads have swipe gestures for this. Regular mice don't, and the apps that ad
 - [Build from source](#build-from-source)
 - [How it works](#how-it-works)
 - [Privacy](#privacy)
+- [Free forever](#free-forever)
+- [FAQ](#faq)
 - [Contributing](#contributing)
 - [License](#license)
 
@@ -228,6 +234,63 @@ Because it drives the system's own shortcuts, desktops switch with the standard 
 - Accessibility permission is used only to see middle mouse button events and to post the desktop shortcuts. Nothing is logged or stored except your settings.
 - The code is small enough to read in a few minutes. Please do.
 
+## Free forever
+
+This project will always be **free of charge and open source**:
+
+- **$0.** No trial period, no license key, no paid tier, no "unlock" purchase, no subscription.
+- **No ads, no telemetry, no account.** The app never connects to the internet.
+- **Every feature is included.** Nothing is held back for a paid version, because there is no paid version.
+- **MIT licensed.** Even if this repository disappeared or the maintainer changed their mind, anyone can fork the code and keep it free. The license makes that permanent.
+
+If a website asks you to pay for "Scroll Wheel Mission Control", it isn't this project. The only official downloads are on the [GitHub Releases page](https://github.com/enso-works/mac-scroll-wheel-mission-control/releases).
+
+## FAQ
+
+<details>
+<summary><b>How do I switch desktops (Spaces) on a Mac with a normal mouse?</b></summary>
+
+macOS only has swipe gestures for trackpads and Magic Mouse. With this app installed, hold the scroll wheel and drag left or right to move one desktop. Without any app, you can use the keyboard shortcuts **Ctrl + Left Arrow** and **Ctrl + Right Arrow**.
+
+</details>
+
+<details>
+<summary><b>How do I open Mission Control with the middle mouse button?</b></summary>
+
+Install this app and click the scroll wheel. macOS also has a built-in option (**System Settings > Desktop & Dock > Shortcuts... > Mission Control > Mouse Button 3**), but it can't be turned off per app, and it can't switch desktops by dragging.
+
+</details>
+
+<details>
+<summary><b>Is this a free alternative to Mac Mouse Fix?</b></summary>
+
+For switching desktops and opening Mission Control, yes. Mac Mouse Fix is a well-made app with many more features (smooth scrolling, button remapping and more), and it asks for payment after its free trial, which is fair for what it offers. If all you want is to move between desktops with a basic mouse, this app does that for free, with no trial.
+
+The same goes for SteerMouse, BetterTouchTool, USB Overdrive and similar tools. They're great if you need everything they do. If you only need desktop switching, you don't have to pay for it.
+
+</details>
+
+<details>
+<summary><b>Does it work with my mouse?</b></summary>
+
+Any mouse with a clickable scroll wheel (middle button) works: cheap USB mice, Bluetooth mice, Logitech, Microsoft, Razer and so on. No drivers or vendor software are needed.
+
+</details>
+
+<details>
+<summary><b>Will it break middle-click in Blender or my browser?</b></summary>
+
+Blender is excluded by default, so orbit and pan work as usual. You can exclude any other app, or set **Wheel click** to **Normal middle click** to keep middle-click everywhere while still dragging to switch desktops.
+
+</details>
+
+<details>
+<summary><b>Is it safe? Why does it need Accessibility permission?</b></summary>
+
+macOS requires Accessibility permission for any app that reads mouse buttons system-wide or presses shortcuts for you. The app only listens to middle-button events and never connects to the internet. The code is short and public, so you can check exactly what it does, or [build it yourself](#build-from-source).
+
+</details>
+
 ## Contributing
 
 Issues and pull requests are welcome. Some ideas:
@@ -241,4 +304,4 @@ For larger changes, please open an issue first so we can agree on the approach.
 
 ## License
 
-[MIT](LICENSE). Free to use, modify and share.
+[MIT](LICENSE). Free to use, modify and share, forever.
