@@ -10,7 +10,11 @@ final class GestureEngine: ObservableObject {
 
     private static let middleButton: Int64 = 2
 
+    #if SCREENSHOTS
+    @Published var isTrusted = AXIsProcessTrusted()
+    #else
     @Published private(set) var isTrusted = AXIsProcessTrusted()
+    #endif
 
     private let settings = AppSettings.shared
     private var tap: CFMachPort?
